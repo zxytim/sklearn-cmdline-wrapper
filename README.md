@@ -51,6 +51,10 @@ Due to internal data structures transition, this script is not
 memory-efficient. It may eat up more memory that you expected.
 For this reason, it is not recommend to use this script on "Big Data"
 
+Contact
+-------
+Xinyu Zhou <zxytim[at]gmail[dot]com>
+
 Help
 ----
 output of ```./learner.py -h```
