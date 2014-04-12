@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
 # $File: learner.py
-# $Date: Sun Nov 03 19:24:21 2013 +0800
+# $Date: Sat Apr 12 22:57:25 2014 +0800
 # $Author: Xinyu Zhou <zxytim[at]gmail[dot]com>
 #
 # TODO:
@@ -240,6 +240,8 @@ which abbreviates as i, f and s.""")
             t = 'float'
         elif t == 's':
             t = 'str'
+        elif t == 'b':
+            t = 'bool'
 
         model_options[key] = eval(t)(val)
 
@@ -277,6 +279,10 @@ which abbreviates as i, f and s.""")
     return args
 
 def read_svmformat_data(fname):
+    from sklearn.datasets import load_svmlight_file
+    X, y = load_svmlight_file(fname)
+    return X, y
+
     x, y = [], []
     with open(fname) as f:
         lines = f.readlines()
