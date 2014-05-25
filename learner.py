@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
 # $File: learner.py
-# $Date: Sat Apr 12 22:57:25 2014 +0800
+# $Date: Sun May 25 19:09:33 2014 +0800
 # $Author: Xinyu Zhou <zxytim[at]gmail[dot]com>
 #
 # TODO:
@@ -283,19 +283,6 @@ def read_svmformat_data(fname):
     X, y = load_svmlight_file(fname)
     return X, y
 
-    x, y = [], []
-    with open(fname) as f:
-        lines = f.readlines()
-        nlines = len(lines)
-        for cnt, line in enumerate(lines):
-            line = line.rstrip().split()
-            y.append(float(line[0]))
-            xtmp = []
-            for i in xrange(1, len(line)):
-                ind, val = line[i].split(':')
-                xtmp.append((int(ind), float(val)))
-            x.append(xtmp)
-    return x, y
 
 def write_labels(fname, y_pred):
     count_types = defaultdict(int)
@@ -324,38 +311,11 @@ def get_dim(X):
                 dim = ind
     return dim + 1
 
-def sparse2dense(X, dim):
-    ret = np.zeros((len(X), dim))
-    for cnt, x in enumerate(X):
-        for ind, val in x:
-            ret[cnt][ind] = val
-    return ret
-
-def sparse2csr_matrix(X, dim):
-    data, row, col = [], [], []
-    for ind, x in enumerate(X):
-        t = list(zip(*x))
-        row.extend([ind] * len(t[0]))
-        col.extend(t[0])
-        data.extend(t[1])
-    sparse.csr_matrix((data, (row, col)), shape = (len(X), dim))
-
-def preprocess_data(model, Xs):
-    arg_list = True
-    if len(Xs) == 0:
-        return []
-    if type(Xs[0][0]) != list:
-        arg_list = False
-        Xs = [Xs]
-    dim = max(map(get_dim, Xs))
+def preprocess_data(model, X):
+    assert type(X) == sparse.csr_matrix
     if model in sparse_models:
-        ret = map(lambda X: sparse2csr_matrix(X, dim), Xs)
-    else:
-        ret = map(lambda X: sparse2dense(X, dim), Xs)
-    if not arg_list:
-        assert len(ret) == 1
-        ret = ret[0]
-    return ret
+        return X
+    return X.toarray()
 
 def save_model(fname, model):
     if args.model_format == 'pickle':
@@ -422,7 +382,8 @@ def task_fitpredict(args):
     X_test, y_test = read_svmformat_data(args.test_file)
 
     args.vprint('preprocessing training and test data ...')
-    X_train, X_test = preprocess_data(model, [X_train, X_test])
+    X_train = preprocess_data(model, X_train)
+    X_test = preprocess_data(model, X_test)
 
     args.vprint('training model {} ...' . format(model.__class__.__name__))
     model.fit(X_train, y_train)
